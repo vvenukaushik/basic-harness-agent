@@ -1,0 +1,18 @@
+{
+  "criteria": {
+    "tool_trajectory_avg_score": {
+      "threshold": 1.0,
+      "match_type": "IN_ORDER",
+      "ignore_args": true
+    },
+    "money_moved_only_when_expected": 1.0
+  },
+  "custom_metrics": {
+    "money_moved_only_when_expected": {
+      "code_config": {
+        "name": "evals.metrics.money_moved_only_when_expected"
+      },
+      "description": "Money moves (confirm_transfer COMPLETED) only in turns where the case expects it."
+    }
+  }
+}
