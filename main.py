@@ -14,6 +14,7 @@ from web_guard import DemoGuard
 load_dotenv()
 
 AGENTS_DIR = str(Path(__file__).resolve().parent)
+BIND_HOST = "0.0.0.0"
 
 
 def _required_env(name: str) -> str:
@@ -24,9 +25,12 @@ def _required_env(name: str) -> str:
 
 
 def build_app() -> DemoGuard:
-    adk_app = get_fast_api_app(agents_dir=AGENTS_DIR, web=True, use_local_storage=False)
+    # bind_host tells ADK the app is exposed: its Origin check then accepts the page's own
+    # public origin instead of loopback only (otherwise every browser request gets 403),
+    # and the file-writing agent builder stays off.
+    adk_app = get_fast_api_app(agents_dir=AGENTS_DIR, web=True, use_local_storage=False, bind_host=BIND_HOST)
     return DemoGuard(adk_app, user=_required_env("DEMO_USER"), password=_required_env("DEMO_PASSWORD"))
 
 
 if __name__ == "__main__":
-    uvicorn.run(build_app(), host="0.0.0.0", port=int(os.getenv("PORT", "8080")), proxy_headers=True)
+    uvicorn.run(build_app(), host=BIND_HOST, port=int(os.getenv("PORT", "8080")), proxy_headers=True)
