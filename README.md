@@ -34,3 +34,27 @@ It is deliberately a weaker model: the point is that the harness, not the model,
 ```powershell
 .venv\Scripts\pytest
 ```
+
+## Deploy (Render free tier)
+
+The same Docker image runs anywhere. `main.py` serves the ADK web UI behind `web_guard.py`:
+
+- **Passcode:** HTTP Basic Auth from `DEMO_USER` / `DEMO_PASSWORD`. The app refuses to start without them.
+- **Rate limit:** 20 agent requests per minute per IP, HTTP 429 beyond that.
+- **Health check:** `/healthz` is the only path open without the passcode.
+- **Secrets:** `GOOGLE_API_KEY` is set in the host's dashboard, never in the repo or image.
+
+On Render: **New → Blueprint**, pick this repo, and fill in `GOOGLE_API_KEY`, `DEMO_USER` and
+`DEMO_PASSWORD` when asked (`render.yaml` defines the rest). The free instance sleeps after
+15 minutes idle, so the first visit takes up to a minute. Restarts reset sessions and balances.
+
+Test the container locally:
+
+```powershell
+docker build -t basic-harness-agent .
+docker run -p 8080:8080 --env-file .env -e DEMO_USER=demo -e DEMO_PASSWORD=change-me basic-harness-agent
+# --env-file keeps quotes literally: write GOOGLE_API_KEY=abc, not GOOGLE_API_KEY='abc'
+```
+
+> **Viewer notice:** all data is mock data. Don't type real personal information; free-tier
+> Gemini prompts may be used by Google for training.
